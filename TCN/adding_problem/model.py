@@ -1,5 +1,6 @@
 from torch import nn
 from TCN.tcn import TemporalConvNet
+from TCN.lstm import LSTM, LSTMCell
 
 
 class TCN(nn.Module):
@@ -15,3 +16,18 @@ class TCN(nn.Module):
     def forward(self, x):
         y1 = self.tcn(x)
         return self.linear(y1[:, :, -1])
+
+
+class LSTMNet(nn.Module):
+    def __init__(self, input_size, output_size, num_channels, num_layers):
+        super(LSTMNet, self).__init__()
+        self.model = LSTM(LSTMCell, input_size, num_channels, num_layers)
+        self.linear = nn.Linear(num_channels, output_size)
+        self.init_weights()
+
+    def init_weights(self):
+        self.linear.weight.data.normal_(0, 0.01)
+
+    def forward(self, x):
+        y1, _ = self.model(x)
+        return self.linear(y1[-1, :, :])
